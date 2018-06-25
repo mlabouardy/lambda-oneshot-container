@@ -7,15 +7,15 @@ node('slaves'){
     }
 
     stage('Build'){
-        docker.build("${image}")
+        docker.build(image)
     }
 
     stage('Push'){
         docker.withRegistry(registry, 'registry') {
-            docker.image(imageName).push("${commitID()}")
+            docker.image(image).push("${commitID()}")
 
             if (env.BRANCH_NAME == 'master') {
-              docker.image(imageName).push('latest')
+              docker.image(image).push('latest')
             }
         }
     }
@@ -23,4 +23,11 @@ node('slaves'){
     stage('Deploy'){
         build job: "oneshot-app-deployment/master"
     }
+}
+
+def commitID() {
+    sh 'git rev-parse HEAD > .git/commitID'
+    def commitID = readFile('.git/commitID').trim()
+    sh 'rm .git/commitID'
+    commitID
 }
