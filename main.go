@@ -37,7 +37,7 @@ func getToken() ([]string, error) {
 }
 
 func triggerJob() error {
-	url := fmt.Sprintf(`%s/%s/build`, os.Getenv("JENKINS_HOST"), os.Getenv("JENKINS_JOB"))
+	url := fmt.Sprintf(`%s/job/%s/build`, os.Getenv("JENKINS_HOST"), os.Getenv("JENKINS_JOB"))
 
 	client := http.Client{}
 	req, err := http.NewRequest("POST", url, nil)
