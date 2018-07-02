@@ -1,33 +1,19 @@
-def image = 'mlabouardy/oneshot-app'
-def registry = 'https://registry.slowcoder.com'
+def managerIp = '10.0.0.179'
+def registry = 'registry.slowcoder.com'
 
-node('slaves'){
+node('master'){
     stage('Checkout'){
         checkout scm
     }
 
-    stage('Build'){
-        docker.build(image)
-    }
-
-    stage('Push'){
-        docker.withRegistry(registry, 'registry') {
-            docker.image(image).push("${commitID()}")
-
-            if (env.BRANCH_NAME == 'master') {
-              docker.image(image).push('latest')
-            }
-        }
+    stage('Copy'){
+        sh "scp -o StrictHostKeyChecking=no docker-compose.yml ec2-user@${managerIp}:/home/ec2-user"
     }
 
     stage('Deploy'){
-        build job: "oneshot-app-deployment/master"
+        withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'registry', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+            sh "ssh -oStrictHostKeyChecking=no ec2-user@${managerIp} docker login --password $PASSWORD --username $USERNAME ${registry}"
+            sh "ssh -oStrictHostKeyChecking=no ec2-user@${managerIp} docker stack deploy --compose-file docker-compose.yml --with-registry-auth demo"
+        }
     }
-}
-
-def commitID() {
-    sh 'git rev-parse HEAD > .git/commitID'
-    def commitID = readFile('.git/commitID').trim()
-    sh 'rm .git/commitID'
-    commitID
 }
