@@ -1,4 +1,4 @@
-def managerIp = 'manager.slowcoder.com'
+def managerIp = '10.0.2.166'
 def registry = 'registry.slowcoder.com'
 
 node('master'){
