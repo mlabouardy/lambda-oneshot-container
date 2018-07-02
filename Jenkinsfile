@@ -21,7 +21,7 @@ node('slaves'){
     }
 
     stage('Deploy'){
-        build job: "oneshot-app-deployment/master"
+        build job: "oneshot-app-deployment"
     }
 }
 
